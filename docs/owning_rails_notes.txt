@@ -1,0 +1,152 @@
+include vs extend
+
+extend
+  > class level method
+include
+  > instance level method
+  > added to all instances
+  > can only be used inside class definition
+
+Syntatic sugar
+class User
+  has_may :roles
+  the same as User.has_many(:roles, {dependent: :destroy})
+end
+
+last argument of the method will be converted to hash
+
+Blocks and Procs
+blocks is not an object -> the only thing not an object in Ruby?
+
+you can wrap them inside proc to call the block
+
+ada lambda -> lambda checks for arity (number of arguments?) and
+
+return proc and lambda are different -> WHAT? don;t understand
+my_proc  = lambda { puts "yeah" }
+same as
+my_proc = -> { p yeah }
+
+need to re-read blocks and procs
+
+Instance eval!
+what?
+pass block and will be evaluated as in it is run inside the instance the class
+see the router example
+
+Converting block to proc and back
+def routes(&this_is_a_proc)
+  instance_eval &this_is_a_proc # this is now becomes a block
+end
+
+You can build a nice DSL using block and procs
+
+implement this:
+Router.new.routes do
+  meatch "/users" => "UserController#Index"
+end
+
+Good book => Patterns of Enterprise Application Architecture (PEAA)
+             Design Patterns in Ruby
+
+ActiveRecord Pattern from PEAA
+
+ConnectionAdapter -> Adapter design pattern
+adapter is used because the wrapper/adapter class for each DB implementations
+like: SqliteAdapter, MysqlAdapter
+
+FrontController Pattern from PEAA
+FrontController -> AbstractController -> ConcreteController1 ..
+
+In Rails -> Router(ActionDispatch) is the FrontController
+Router (ActionDispatch) -> ApplicationController -> UserController ...
+
+Rack -> sets of specifications that sits between web server and the application framework
+for instance Rails and Sinatra are Rack compatible framework
+
+envronment hash
+env = {
+  REQUEST_METHOD ..
+}
+
+config.ru -> used by Rack based server to start the app
+.ru -> rack up
+plain ruby code but yeah not with rb extension
+first line -> requre the envronment
+second line -> run the application
+
+Inside web server
+status, headers, body = app.call(env)
+
+Sinatra implmentation of rack - simplistic -> I don't really understand
+See that rack is just set of specifications - more like
+interface or contract thing
+
+Now get into the Rack Middleware
+wow - it's so cool
+can be simply turn on or off
+eg: use Logger
+
+use Logger is the syntatic sugar of run Logger.new(App.new)
+
+middleware chaining
+use Logger
+use Caching
+
+will be the same internally as Logger.new(Caching.new(App.new))
+
+
+...... connection lost :(
+
+Intercepting Filters
+
+can you call super inside a module? -> well no without using some tricks
+ooh handy :
+Parent.ancestors
+you'd see parent is before A,B
+
+In Ruby 2 we have prepend - which you can use like below:
+class Child < Parent
+  prepend A,B
+end
+
+But not in Rails yet - Rails does this with a trick:
+create a parent class that includes the modules
+get the child class to inherit from that parent
+makes sense but craaazy
+
+this is way modules are setup in Rails - and also one of the (only?) reasons
+for the Metal class.
+class Base < Metal
+  include Filters
+end
+
+So why we have Metal and Base -> because of the use of Super from module
+otherwise you cannot do super from module... metal is kind of useless (looks like)
+
+So prepend was added becausue of Rails?
+
+Metal is bare minimum implementation of controller -> faster coz it doesn't do anything
+Base is Metal + other stuffs
+
+Oh look another trick! This is to put class level methods on module
+
+module Filters
+  def self.included(base)
+    base.extend ClassMethods
+  end
+
+  module ClassMethods
+    def before_action(method)end
+  end
+end
+
+Don't really understand this - but OK..
+
+around_filter implementation is CRAZZZZY
+crazy hackery
+
+TemplateView pattern
+
+binding object -> ehm what?
+
